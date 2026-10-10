@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Naimsmp | Malaysian Minecraft Survival Economy Server</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            emerald: '#10b981',
+                            cyan: '#06b6d4',
+                            dark: '#0a0f1d',
+                            card: '#131b2e',
+                            accent: '#3b82f6'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #070a13;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism Styles */
+        .glass-panel {
+            background: rgba(19, 27, 46, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-panel-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-panel-hover:hover {
+            background: rgba(25, 36, 61, 0.85);
+            border-color: rgba(16, 185, 129, 0.4);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px -10px rgba(16, 185, 129, 0.2);
+        }
+
+        /* Neon Glow Effects */
+        .neon-glow-emerald {
+            box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.5);
+        }
+
+        .neon-glow-cyan {
+            box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.5);
+        }
+
+        .neon-text-emerald {
+            text-shadow: 0 0 12px rgba(16, 185, 129, 0.6);
+        }
+
+        /* Animated Gradient Text */
+        .gradient-text {
+            background: linear-gradient(135deg, #34d399 0%, #06b6d4 50%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #070a13;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f293d;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #10b981;
+        }
+
+        /* Copy Toast Notification */
+        .toast {
+            visibility: hidden;
+            min-width: 220px;
+            background-color: #10b981;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 12px;
+            position: fixed;
+            z-index: 100;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-weight: 600;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            opacity: 0;
+            transition: opacity 0.3s, visibility 0.3s, bottom 0.3s;
+        }
+
+        .toast.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 40px;
+        }
+
+        /* Minecraft Grid Background */
+        .bg-grid-pattern {
+            background-image: radial-gradient(rgba(16, 185, 129, 0.12) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+    </style>
+</head>
+<body class="relative min-h-screen antialiased flex flex-col justify-between">
+
+    <!-- Background Canvas for Ambient Floating Particles -->
+    <canvas id="bgCanvas" class="fixed inset-0 pointer-events-none z-0"></canvas>
+    <div class="fixed inset-0 bg-grid-pattern pointer-events-none z-0"></div>
+
+    <!-- Top Navigation -->
+    <header class="sticky top-0 z-50 glass-panel border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <!-- Logo Section -->
+            <a href="#" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center font-mono font-black text-xl text-slate-950 shadow-lg group-hover:scale-105 transition-transform">
+                    N
+                </div>
+                <div class="flex flex-col">
+                    <span class="font-extrabold text-2xl tracking-wider text-white flex items-center gap-2">
+                        NAIMSMP
+                        <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                    </span>
+                    <span class="text-xs text-emerald-400 font-medium tracking-widest uppercase">Survival Economy</span>
+                </div>
+            </a>
+
+            <!-- Navigation Links -->
+            <nav class="hidden md:flex items-center gap-8 font-medium text-sm text-gray-300">
+                <a href="#about" class="hover:text-emerald-400 transition-colors">About</a>
+                <a href="#connect" class="hover:text-emerald-400 transition-colors">Connect</a>
+                <a href="#features" class="hover:text-emerald-400 transition-colors">Features</a>
+                <a href="#staff" class="hover:text-emerald-400 transition-colors">Team</a>
+                <a href="#contact" class="hover:text-emerald-400 transition-colors">Support</a>
+            </nav>
+
+            <!-- Discord Button -->
+            <a href="https://discord.gg/GW3aPMasKu" target="_blank" rel="noopener noreferrer" 
+               class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition-all shadow-lg hover:shadow-indigo-500/30 hover:scale-105">
+                <i class="fa-brands font-bold text-lg fa-discord"></i>
+                <span>Join Discord</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="relative z-10 flex-grow">
+
+        <!-- Hero Section -->
+        <section id="about" class="relative pt-12 pb-20 md:pt-24 md:pb-32 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <!-- Region Badge -->
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-6 animate-pulse">
+                <span>🇲🇾 Official Malaysian Minecraft Server</span>
+            </div>
+
+            <!-- Title & Intro -->
+            <h1 class="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight text-white mb-6 leading-tight">
+                Welcome to <span class="gradient-text">NAIMSMP</span>
+            </h1>
+            <p class="max-w-2xl mx-auto text-gray-300 text-lg sm:text-xl font-normal leading-relaxed mb-10">
+                Dive into the ultimate Malaysian <span class="text-emerald-400 font-semibold">Survival Economy</span> experience. Build your empire, trade with players, conquer quests, and enjoy seamless crossplay performance!
+            </p>
+
+            <!-- Quick Action Buttons -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-lg mx-auto">
+                <a href="#connect" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-extrabold text-base transition-all shadow-xl neon-glow-emerald hover:scale-105 flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-gamepad text-lg"></i>
+                    <span>Start Playing Now</span>
+                </a>
+                <a href="https://discord.gg/GW3aPMasKu" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto px-8 py-4 rounded-xl glass-panel hover:bg-white/10 text-white font-bold text-base transition-all border border-white/15 flex items-center justify-center gap-3 hover:scale-105">
+                    <i class="fa-brands fa-discord text-indigo-400 text-lg"></i>
+                    <span>Discord Server</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- Connection Details / Server IP Section -->
+        <section id="connect" class="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-extrabold text-white tracking-tight">Server Connection</h2>
+                <p class="text-gray-400 text-sm mt-2">Click on any IP address to copy it directly to your clipboard</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                
+                <!-- Java Edition Card -->
+                <div class="glass-panel glass-panel-hover p-8 rounded-2xl relative overflow-hidden flex flex-col justify-between">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                    <div>
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-2xl">
+                                    <i class="fa-solid fa-desktop"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold text-white">Java Edition</h3>
+                                    <span class="text-xs text-gray-400">PC & Laptop Players</span>
+                                </div>
+                            </div>
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Online</span>
+                        </div>
+
+                        <p class="text-gray-300 text-sm mb-6">Join with standard Minecraft Java Client. Recommended Version: 1.20+</p>
+                    </div>
+
+                    <!-- Copy IP Button Box -->
+                    <div onclick="copyText('play.naimsmp.my.id', 'Java Server IP Copied!')" 
+                         class="cursor-pointer group glass-panel p-4 rounded-xl border border-emerald-500/30 flex items-center justify-between hover:border-emerald-400 transition-all">
+                        <div class="flex flex-col">
+                            <span class="text-xs text-gray-400 uppercase font-semibold">Server Address</span>
+                            <span class="font-mono text-emerald-400 font-bold text-lg group-hover:text-emerald-300">play.naimsmp.my.id</span>
+                        </div>
+                        <button class="w-10 h-10 rounded-lg bg-emerald-500/20 group-hover:bg-emerald-500 text-emerald-400 group-hover:text-slate-950 flex items-center justify-center transition-all">
+                            <i class="fa-regular fa-copy text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Bedrock Edition Card -->
+                <div class="glass-panel glass-panel-hover p-8 rounded-2xl relative overflow-hidden flex flex-col justify-between">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                    <div>
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-xl bg-cyan-500/20 flex items-center justify-center text-cyan-400 text-2xl">
+                                    <i class="fa-solid fa-mobile-screen"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold text-white">Bedrock Edition</h3>
+                                    <span class="text-xs text-gray-400">PE / Mobile / Consoles / Win10</span>
+                                </div>
+                            </div>
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Crossplay</span>
+                        </div>
+
+                        <p class="text-gray-300 text-sm mb-6">Seamlessly join from iOS, Android, Windows, or Console devices.</p>
+                    </div>
+
+                    <!-- Copy IP & Port Container -->
+                    <div class="space-y-3">
+                        <div onclick="copyText('play.naimsmp.my.id', 'Bedrock IP Copied!')" 
+                             class="cursor-pointer group glass-panel p-3.5 rounded-xl border border-cyan-500/30 flex items-center justify-between hover:border-cyan-400 transition-all">
+                            <div class="flex flex-col">
+                                <span class="text-[10px] text-gray-400 uppercase font-semibold">Server Address</span>
+                                <span class="font-mono text-cyan-400 font-bold text-base group-hover:text-cyan-300">play.naimsmp.my.id</span>
+                            </div>
+                            <button class="w-8 h-8 rounded-lg bg-cyan-500/20 group-hover:bg-cyan-500 text-cyan-400 group-hover:text-slate-950 flex items-center justify-center transition-all">
+                                <i class="fa-regular fa-copy text-sm"></i>
+                            </button>
+                        </div>
+
+                        <div onclick="copyText('16014', 'Bedrock Port Copied!')" 
+                             class="cursor-pointer group glass-panel p-3.5 rounded-xl border border-cyan-500/30 flex items-center justify-between hover:border-cyan-400 transition-all">
+                            <div class="flex flex-col">
+                                <span class="text-[10px] text-gray-400 uppercase font-semibold">Port Number</span>
+                                <span class="font-mono text-cyan-400 font-bold text-base group-hover:text-cyan-300">16014</span>
+                            </div>
+                            <button class="w-8 h-8 rounded-lg bg-cyan-500/20 group-hover:bg-cyan-500 text-cyan-400 group-hover:text-slate-950 flex items-center justify-center transition-all">
+                                <i class="fa-regular fa-copy text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Server Features Section -->
+        <section id="features" class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-14">
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-white">Why Play On Naimsmp?</h2>
+                <p class="text-gray-400 text-base mt-2">Discover features engineered for an engaging survival experience</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Feature 1 -->
+                <div class="glass-panel glass-panel-hover p-6 rounded-2xl flex flex-col items-start">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl mb-4">
+                        <i class="fa-solid fa-coins"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Player Economy</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">Earn money through shops, player trades, jobs, and market auctions to build your dynamic empire.</p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="glass-panel glass-panel-hover p-6 rounded-2xl flex flex-col items-start">
+                    <div class="w-12 h-12 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-2xl mb-4">
+                        <i class="fa-solid fa-gem"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Custom Survival</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">Enhanced survival gameplay featuring land claims, custom perks, rank progression, and quests.</p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="glass-panel glass-panel-hover p-6 rounded-2xl flex flex-col items-start">
+                    <div class="w-12 h-12 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-2xl mb-4">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Malaysian Community</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">A warm, active, and friendly local community welcoming players of all backgrounds and skill levels.</p>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="glass-panel glass-panel-hover p-6 rounded-2xl flex flex-col items-start">
+                    <div class="w-12 h-12 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center text-2xl mb-4">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">24/7 Low Latency</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">Hosted locally for maximum performance, minimal lag, and round-the-clock uptime for Java & Bedrock.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Server Staff Section -->
+        <section id="staff" class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-14">
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-white">Meet The Administration</h2>
+                <p class="text-gray-400 text-base mt-2">The dedicated staff behind Naimsmp management & growth</p>
+            </div>
+
+            <!-- Staff Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+
+                <!-- Owner Card -->
+                <div class="glass-panel glass-panel-hover p-6 rounded-2xl text-center flex flex-col items-center">
+                    <div class="w-20 h-20 rounded-2xl bg-gradient-to-tr from-amber-500 to-red-500 p-1 mb-4 shadow-lg">
+                        <div class="w-full h-full bg-slate-950 rounded-xl flex items-center justify-center text-amber-400 text-2xl font-black">
+                            D
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">Dwafiey</h3>
+                    <span class="inline-block mt-2 px-3 py-1 rounded-full text-xs font-extrabold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                        Owner
+                    </span>
+                </div>
+
+                <!-- Co-Owner Card -->
+                <div class="glass-panel glass-panel-hover p-6 rounded-2xl text-center flex flex-col items-center">
+                    <div class="w-20 h-20 rounded-2xl bg-gradient-to-tr from-purple-500 to-pink-500 p-1 mb-4 shadow-lg">
+                        <div class="w-full h-full bg-slate-950 rounded-xl flex items-center justify-center text-purple-400 text-2xl font-black">
+                            Y
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">Yanzz10Z</h3>
+                    <span class="inline-block mt-2 px-3 py-1 rounded-full text-xs font-extrabold uppercase bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                        Co-Owner
+                    </span>
+                </div>
+
+                <!-- Developer Card -->
+                <div class="glass-panel glass-panel-hover p-6 rounded-2xl text-center flex flex-col items-center">
+                    <div class="w-20 h-20 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-500 p-1 mb-4 shadow-lg">
+                        <div class="w-full h-full bg-slate-950 rounded-xl flex items-center justify-center text-cyan-400 text-2xl font-black">
+                            A
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">Alepin</h3>
+                    <span class="inline-block mt-2 px-3 py-1 rounded-full text-xs font-extrabold uppercase bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                        Developer
+                    </span>
+                </div>
+
+                <!-- Admin 1 Card -->
+                <div class="glass-panel glass-panel-hover p-6 rounded-2xl text-center flex flex-col items-center">
+                    <div class="w-20 h-20 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-500 p-1 mb-4 shadow-lg">
+                        <div class="w-full h-full bg-slate-950 rounded-xl flex items-center justify-center text-emerald-400 text-2xl font-black">
+                            Z
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">Zian77</h3>
+                    <span class="inline-block mt-2 px-3 py-1 rounded-full text-xs font-extrabold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        Admin 1
+                    </span>
+                </div>
+
+                <!-- Admin 2 Card -->
+                <div class="glass-panel glass-panel-hover p-6 rounded-2xl text-center flex flex-col items-center">
+                    <div class="w-20 h-20 rounded-2xl bg-gradient-to-tr from-teal-500 to-emerald-400 p-1 mb-4 shadow-lg">
+                        <div class="w-full h-full bg-slate-950 rounded-xl flex items-center justify-center text-teal-400 text-2xl font-black">
+                            D
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">Dalright</h3>
+                    <span class="inline-block mt-2 px-3 py-1 rounded-full text-xs font-extrabold uppercase bg-teal-500/20 text-teal-300 border border-teal-500/30">
+                        Admin 2
+                    </span>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Contact & Support Section -->
+        <section id="contact" class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="glass-panel p-8 md:p-12 rounded-3xl text-center max-w-4xl mx-auto border border-emerald-500/20 relative overflow-hidden">
+                <div class="absolute -top-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <i class="fa-solid fa-headset text-4xl text-emerald-400 mb-4 inline-block"></i>
+                <h2 class="text-3xl font-extrabold text-white mb-2">Need Support or Have Enquiries?</h2>
+                <p class="text-gray-300 text-sm max-w-xl mx-auto mb-8">
+                    Contact the Naimsmp management team directly via email or reach out on our official Discord server.
+                </p>
+
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <!-- Email 1 Button -->
+                    <div onclick="copyText('ku703817@gmail.com', 'Email ku703817@gmail.com copied!')" 
+                         class="cursor-pointer w-full sm:w-auto px-6 py-3.5 rounded-xl glass-panel hover:bg-emerald-500/10 border border-white/10 hover:border-emerald-400 transition-all flex items-center justify-center gap-3">
+                        <i class="fa-regular fa-envelope text-emerald-400"></i>
+                        <span class="font-mono text-sm text-gray-200">ku703817@gmail.com</span>
+                        <i class="fa-regular fa-copy text-xs text-gray-400"></i>
+                    </div>
+
+                    <!-- Email 2 Button -->
+                    <div onclick="copyText('dwafiey2011@gmail.com', 'Email dwafiey2011@gmail.com copied!')" 
+                         class="cursor-pointer w-full sm:w-auto px-6 py-3.5 rounded-xl glass-panel hover:bg-emerald-500/10 border border-white/10 hover:border-emerald-400 transition-all flex items-center justify-center gap-3">
+                        <i class="fa-regular fa-envelope text-emerald-400"></i>
+                        <span class="font-mono text-sm text-gray-200">dwafiey2011@gmail.com</span>
+                        <i class="fa-regular fa-copy text-xs text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer Section -->
+    <footer class="relative z-10 glass-panel border-t border-white/10 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            
+            <div class="flex items-center gap-3">
+                <div class="w-7 h-7 rounded-md bg-emerald-500 flex items-center justify-center font-mono font-bold text-slate-950 text-xs">
+                    N
+                </div>
+                <span class="text-sm text-gray-400 font-medium">
+                    &copy; <span id="year"></span> <strong class="text-white">Naimsmp</strong>. All rights reserved.
+                </span>
+            </div>
+
+            <!-- Credits -->
+            <div class="text-sm text-gray-400 flex items-center gap-1 font-medium">
+                <span>Made with <i class="fa-solid fa-heart text-red-500 text-xs mx-1"></i> by</span>
+                <span class="text-emerald-400 font-bold">Yanzz10z</span>
+                <span>&</span>
+                <span class="text-emerald-400 font-bold">Dwafiey</span>
+            </div>
+
+        </div>
+    </footer>
+
+    <!-- Toast Notification Container -->
+    <div id="toast" class="toast">Copied to clipboard!</div>
+
+    <script>
+        // Set dynamic current year in footer
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Clipboard Copy Helper with Toast Notification
+        function copyText(text, message) {
+            // Using execCommand for maximum iframe compatibility
+            const el = document.createElement('textarea');
+            el.value = text;
+            el.setAttribute('readonly', '');
+            el.style.position = 'absolute';
+            el.style.left = '-9999px';
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+
+            showToast(message);
+        }
+
+        // Show Toast Notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+
+        // Dynamic Ambient Background Canvas Particle FX
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let particles = [];
+        const particleCount = 45;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = (Math.random() - 0.5) * 0.4;
+                this.speedY = (Math.random() - 0.5) * 0.4;
+                this.opacity = Math.random() * 0.5 + 0.2;
+                this.color = Math.random() > 0.5 ? '#10b981' : '#06b6d4';
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+                    this.reset();
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.opacity;
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+
+        window.onload = function() {
+            initParticles();
+            animate();
+        };
+    </script>
+</body>
+</html>
